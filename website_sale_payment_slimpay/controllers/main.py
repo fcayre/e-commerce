@@ -1,5 +1,7 @@
 import logging
 
+from werkzeug import urls
+
 from odoo import http
 from odoo.http import request
 from odoo.exceptions import UserError
@@ -26,9 +28,14 @@ class SlimpayControllerWebsiteSale(WebsiteSale):
         env = request.env
 
         if request.website.domain:
-            _url = 'https://' + request.website.domain
+            _url = request.website.domain
+            if not urls.url_parse(request.website.domain).scheme:
+                _url = 'https://' + request.website.domain
         else:
             _url = env['ir.config_parameter'].sudo().get_param('web.base.url')
+
+        if _url.endswith("/"):
+            _url = _url[:-1]
 
         validate_payment_url = _url + '/shop/payment/validate'
 
